@@ -129,9 +129,9 @@ fn main() {
     }
     //creates a vector to store
     let mut out = vec![];
-    //
+    //drops tx from this scope
     drop(tx);
-    //
+    //iterates through receiver
     for p in rx{
         out.push(p);
     }
