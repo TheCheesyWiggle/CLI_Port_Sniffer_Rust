@@ -45,20 +45,23 @@ impl Arguments{
                 \n\r -h or -help to show this help message");
                 return Err("help");
             }
-            //
+            //Error handling when -h or -help has more than 2 arguments
             else if (flag.contains("-h") || flag.contains("-help")){
                 return Err("too many arguments");
             }
-            //
+            //checks if arguments contain -j
             else if flag.contains("-j") {
+                //initializes ip address
                 let ipaddr = match IpAddr::from_str(&args[3]) {
                     Ok(s) => s,
                     Err(_) => return Err("Invalid IPADDR; must be IPv6 or IPv4")
                 };
+                //initializes number of threads
                 let threads = match args[2].parse::<u16>() {
                     Ok(s) => s,
                     Er(_) => Err("failed to parse thread number")
                 };
+                //returns struct
                 return Ok(Arguments {threads, flag, ipaddr});
             }
             else {
