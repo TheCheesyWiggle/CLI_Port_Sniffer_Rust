@@ -5,11 +5,10 @@ use std::str::FromStr;
 use std::process;
 use std::sync::mpsc::{Sender, channel};
 use std::thread;
-use std::fmt::rt::v1::Argument;
 
 //creates constant og max amount of threads
 
-const MAX: U16= 65535;
+const MAX: u16= 65535;
 
 //creates a datatype called arguments
 struct Arguments{
@@ -39,7 +38,7 @@ impl Arguments{
             //
             let flag = args[1].clone();
             //check whether the args type is valid or contains the help argument
-            if flag.contains("-h") || flag.contains("-help")&& args.len==2{
+            if flag.contains("-h") || flag.contains("-help")&& args.len() ==2{
                 //displays help message
                 println!("Usage: -j to select the number of threads you want to use
                 \n\r -h or -help to show this help message");
@@ -59,7 +58,7 @@ impl Arguments{
                 //initializes number of threads
                 let threads = match args[2].parse::<u16>() {
                     Ok(s) => s,
-                    Er(_) => Err("failed to parse thread number")
+                    Err(_) => return Err("failed to parse thread number"),
                 };
                 //returns struct
                 return Ok(Arguments {threads, flag, ipaddr});
@@ -78,7 +77,8 @@ fn scan (tx: Sender<u16>, start_port: u16, addr: IpAddr,num_threads:u16){
     //scans ports of ip address
     loop{
         //checks the port number of  ip address
-        match Tcpstream::connect(addr,port) {
+        let mut stream = TcpStream::connect((addr,port));
+        match stream {
             Ok(_)=> {
                 //sends feed back the the program is working
                 print!(".");
@@ -89,11 +89,11 @@ fn scan (tx: Sender<u16>, start_port: u16, addr: IpAddr,num_threads:u16){
             }
             Err(_)=>{}
         }
-        //
+        //if max port minus current port is less than the number of threads it breaks the loop
         if (MAX-port)<=num_threads {
             break;
         }
-        //
+        //increases the ports
         port+=num_threads;
     }
 }
@@ -122,10 +122,7 @@ fn main() {
     for i in 0..num_threads{
         let tx = tx.clone();
         //creates a thread
-        thread::spawn(move||{
-            //calls scan function
-            scan(tx, i, arguments.ipaddr, num_threads);
-        });
+       thread::spawn(move||{scan(tx, i, arguments.ipaddr, num_threads)});
     }
     //creates a vector to store
     let mut out = vec![];
