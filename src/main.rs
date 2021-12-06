@@ -71,8 +71,31 @@ impl Arguments{
     }
 }
 
-fn scan (){
-
+//takes the parameters
+fn scan (tx: Sender<u16>, start_port: u16, addr: IpAddr,num_threads:u16){
+    //starts at port 0
+    let mut port: u16 = start_port+1;
+    //scans ports of ip address
+    loop{
+        //checks the port number of  ip address
+        match Tcpstream::connect(addr,port) {
+            Ok(_)=> {
+                //sends feed back the the program is working
+                print!(".");
+                //
+                io::stdout().flush().unwrap();
+                //sends to port number to the rx value in other subroutine
+                tx.send(port).unwrap();
+            }
+            Err(_)=>{}
+        }
+        //
+        if (MAX-port)<=num_threads {
+            break;
+        }
+        //
+        port+=num_threads;
+    }
 }
 
 fn main() {
@@ -103,6 +126,22 @@ fn main() {
             //calls scan function
             scan(tx, i, arguments.ipaddr, num_threads);
         });
-
     }
+    //creates a vector to store
+    let mut out = vec![];
+    //
+    drop(tx);
+    //
+    for p in rx{
+        out.push(p);
+    }
+
+    println!("");
+    //orders open ports
+    out.sort();
+    //outputs open ports
+    for v in out{
+        println!("{} is open",v)
+    }
+
 }
