@@ -45,7 +45,7 @@ impl Arguments{
                 return Err("help");
             }
             //Error handling when -h or -help has more than 2 arguments
-            else if (flag.contains("-h") || flag.contains("-help")){
+            else if flag.contains("-h") || flag.contains("-help"){
                 return Err("too many arguments");
             }
             //checks if arguments contain -j
@@ -77,7 +77,7 @@ fn scan (tx: Sender<u16>, start_port: u16, addr: IpAddr,num_threads:u16){
     //scans ports of ip address
     loop{
         //checks the port number of  ip address
-        let mut stream = TcpStream::connect((addr,port));
+        let stream = TcpStream::connect((addr,port));
         match stream {
             Ok(_)=> {
                 //sends feed back the the program is working
@@ -122,9 +122,10 @@ fn main() {
     for i in 0..num_threads{
         let tx = tx.clone();
         //creates a thread
-       thread::spawn(move||{scan(tx, i, arguments.ipaddr, num_threads)});
+       thread::spawn(move||
+           {scan(tx, i, arguments.ipaddr, num_threads)});
     }
-    //creates a vector to store
+    //creates a vector to store output
     let mut out = vec![];
     //drops tx from this scope
     drop(tx);
